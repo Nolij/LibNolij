@@ -163,6 +163,10 @@ tasks.githubRelease {
     dependsOn(tasks.assemble, tasks.check)
 }
 
+tasks.publish {
+    dependsOn(tasks.githubRelease)
+}
+
 publishing {
     repositories {
         maven("https://maven.taumc.org/releases") {
