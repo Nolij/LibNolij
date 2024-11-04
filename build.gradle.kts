@@ -91,10 +91,13 @@ println("LibNolij Version: $versionString")
 
 repositories {
     mavenCentral()
+    maven("https://repo.spongepowered.org/repository/maven-public/")
 }
 
 dependencies {
     compileOnly("org.jetbrains:annotations:${"jetbrains_annotations_version"()}")
+    
+    compileOnly("org.spongepowered:mixin:${"mixin_version"()}")
 
     testImplementation("org.junit.jupiter:junit-jupiter:${"junit_version"()}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
