@@ -4,8 +4,13 @@ public final class ColourUtil {
 	
 	private ColourUtil() {}
 	
-	public static int getColour(double alpha, double red, double green, double blue) {
+	public static int getRGBA(double alpha, double red, double green, double blue) {
 		return ((int) (alpha * 255D) << 24) | ((int) (red * 255D) << 16) | ((int) (green * 255D) << 8) | (int) (blue * 255D);
+	}
+	
+	@Deprecated(forRemoval = true)
+	public static int getColour(double alpha, double red, double green, double blue) {
+		return getRGBA(alpha, red, green, blue);
 	}
 	
 	public static double getAlpha(int colour) {
@@ -41,7 +46,7 @@ public final class ColourUtil {
 	}
 	
 	public static int chroma(double timestamp, double speed, int index) {
-		return getColour(
+		return getRGBA(
 			1D,
 			chromaRed(timestamp, speed, index), 
 			chromaGreen(timestamp, speed, index),
@@ -49,7 +54,7 @@ public final class ColourUtil {
 	}
 	
 	public static int chroma(double timestamp, double speed, int index, double factor) {
-		return getColour(
+		return getRGBA(
 			1D,
 			chromaRed(timestamp, speed, index) * factor, 
 			chromaGreen(timestamp, speed, index) * factor,
