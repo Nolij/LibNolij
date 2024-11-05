@@ -33,29 +33,35 @@ public final class MixinUtil {
 		MethodType.methodType(List.class, Object.class)
 	);
 	
-	@SuppressWarnings("CallToPrintStackTrace")
-	public static void auditAndExit() {
+	public static void audit() throws Throwable {
 		var env = MixinEnvironment.getCurrentEnvironment();
-		int exitCode = 0;
-		try {
-			if (env.getActiveTransformer() instanceof IMixinTransformer transformer) {
-				//noinspection DataFlowIssue
-				var processor = GET_PROCESSOR.invokeExact(transformer);
-				//noinspection unchecked,DataFlowIssue
-				List<IMixinConfig> configs = (List<IMixinConfig>) GET_CONFIGS.invokeExact(processor);
-				var provider = MixinService.getService().getClassProvider();
-				for (var config : configs) {
-					for (String target : config.getTargets()) {
-						try {
-							provider.findClass(target, false);
-						} catch (Exception e) {
-							System.err.println("Failed to load " + target);
-							e.printStackTrace();
-							exitCode = 1;
-						}
+		if (env.getActiveTransformer() instanceof IMixinTransformer transformer) {
+			final Object processor;
+			final List<IMixinConfig> configs;
+			//noinspection DataFlowIssue
+			processor = GET_PROCESSOR.invokeExact(transformer);
+			//noinspection unchecked,DataFlowIssue
+			configs = (List<IMixinConfig>) GET_CONFIGS.invokeExact(processor);
+			
+			var provider = MixinService.getService().getClassProvider();
+			for (var config : configs) {
+				for (String target : config.getTargets()) {
+					try {
+						provider.findClass(target, false);
+					} catch (Throwable t) {
+						System.err.println("Failed to load " + target);
+						throw t;
 					}
 				}
 			}
+		}
+	}
+	
+	@SuppressWarnings("CallToPrintStackTrace")
+	public static void auditAndExit() {
+		var exitCode = 0;
+		try {
+			audit();
 		} catch (Throwable t) {
 			t.printStackTrace();
 			exitCode = 1;

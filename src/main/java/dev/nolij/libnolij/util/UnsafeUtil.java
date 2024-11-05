@@ -27,7 +27,7 @@ public final class UnsafeUtil {
 			var fieldBase = UNSAFE.staticFieldBase(internalLookupField);
             INTERNAL_LOOKUP = (MethodHandles.Lookup) UNSAFE.getObject(fieldBase, fieldOffset);
             
-            UNSAFE_REFRACTION = new Refraction(INTERNAL_LOOKUP);
+            UNSAFE_REFRACTION = new Refraction(INTERNAL_LOOKUP, Refraction.class.getClassLoader());
         } catch (Throwable e) {
             throw new AssertionError(e);
         }

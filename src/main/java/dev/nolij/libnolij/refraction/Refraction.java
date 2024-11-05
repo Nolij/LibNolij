@@ -25,9 +25,15 @@ public final class Refraction {
 	}
 	
 	private final @NotNull MethodHandles.Lookup lookup;
+	private final @NotNull ClassLoader classLoader;
 	
 	public Refraction(@NotNull final MethodHandles.Lookup lookup) {
+		this(lookup, lookup.lookupClass().getClassLoader());
+	}
+	
+	public Refraction(@NotNull final MethodHandles.Lookup lookup, @NotNull final ClassLoader classLoader) {
 		this.lookup = lookup;
+		this.classLoader = classLoader;
 	}
 	
 	@SafeVarargs
@@ -41,8 +47,8 @@ public final class Refraction {
 	
 	public @Nullable Class<?> getClassOrNull(@NotNull final String className) {
 		try {
-			return lookup.findClass(className);
-		} catch (ClassNotFoundException | IllegalAccessException ignored) {
+			return Class.forName(className, false, classLoader);
+		} catch (ClassNotFoundException ignored) {
 			return null;
 		}
 	}
@@ -50,8 +56,8 @@ public final class Refraction {
 	public @Nullable Class<?> getClassOrNull(@NotNull final String... classNames) {
 		for (final String className : classNames) {
 			try {
-				return lookup.findClass(className);
-			} catch (ClassNotFoundException | IllegalAccessException ignored) { }
+				return Class.forName(className, false, classLoader);
+			} catch (ClassNotFoundException ignored) { }
 		}
 		
 		return null;
@@ -112,6 +118,19 @@ public final class Refraction {
 		}
 	}
 	
+	public @Nullable MethodHandle getStaticGetterOrNull(@Nullable final Class<?> clazz, 
+												  		@NotNull final String fieldName,
+	                                              		@Nullable final Class<?> fieldType) {
+		if (clazz == null || fieldType == null)
+			return null;
+		
+		try {
+			return lookup.findStaticGetter(clazz, fieldName, fieldType);
+		} catch (ReflectiveOperationException ignored) {
+			return null;
+		}
+	}
+	
 	public @Nullable MethodHandle getGetterOrNull(@Nullable final Class<?> clazz, 
 												  @NotNull final String fieldName,
 	                                              @Nullable final Class<?> fieldType, 
@@ -127,6 +146,21 @@ public final class Refraction {
 		}
 	}
 	
+	public @Nullable MethodHandle getStaticGetterOrNull(@Nullable final Class<?> clazz, 
+													  	@NotNull final String fieldName,
+													  	@Nullable final Class<?> fieldType, 
+													  	@NotNull final MethodType methodType) {
+		if (clazz == null || fieldType == null)
+			return null;
+		
+		try {
+			return lookup.findStaticGetter(clazz, fieldName, fieldType)
+				.asType(methodType);
+		} catch (ReflectiveOperationException ignored) {
+			return null;
+		}
+	}
+	
 	public @Nullable MethodHandle getSetterOrNull(@Nullable final Class<?> clazz, 
 												  @NotNull final String fieldName,
 	                                              @Nullable final Class<?> fieldType) {
@@ -135,6 +169,19 @@ public final class Refraction {
 		
 		try {
 			return lookup.findSetter(clazz, fieldName, fieldType);
+		} catch (ReflectiveOperationException ignored) {
+			return null;
+		}
+	}
+	
+	public @Nullable MethodHandle getStaticSetterOrNull(@Nullable final Class<?> clazz, 
+												  		@NotNull final String fieldName,
+	                                              		@Nullable final Class<?> fieldType) {
+		if (clazz == null || fieldType == null)
+			return null;
+		
+		try {
+			return lookup.findStaticSetter(clazz, fieldName, fieldType);
 		} catch (ReflectiveOperationException ignored) {
 			return null;
 		}
@@ -155,13 +202,43 @@ public final class Refraction {
 		}
 	}
 	
-	public @Nullable VarHandle getFieldOrNull(@Nullable final Class<?> clazz, 
-											  @NotNull final String fieldName) {
-		if (clazz == null)
+	public @Nullable MethodHandle getStaticSetterOrNull(@Nullable final Class<?> clazz, 
+												  		@NotNull final String fieldName,
+	                                              		@Nullable final Class<?> fieldType, 
+												  		@NotNull final MethodType methodType) {
+		if (clazz == null || fieldType == null)
 			return null;
 		
 		try {
-			return lookup.unreflectVarHandle(clazz.getField(fieldName))
+			return lookup.findStaticSetter(clazz, fieldName, fieldType)
+				.asType(methodType);
+		} catch (ReflectiveOperationException ignored) {
+			return null;
+		}
+	}
+	
+	public @Nullable VarHandle getFieldOrNull(@Nullable final Class<?> clazz, 
+											  @NotNull final String fieldName,
+											  @Nullable final Class<?> fieldType) {
+		if (clazz == null || fieldType == null)
+			return null;
+		
+		try {
+			return lookup.findVarHandle(clazz, fieldName, fieldType)
+				.withInvokeExactBehavior();
+		} catch (NoSuchFieldException | IllegalAccessException ignored) {
+			return null;
+		}
+	}
+	
+	public @Nullable VarHandle getStaticFieldOrNull(@Nullable final Class<?> clazz, 
+													@NotNull final String fieldName, 
+													@Nullable final Class<?> fieldType) {
+		if (clazz == null || fieldType == null)
+			return null;
+		
+		try {
+			return lookup.findStaticVarHandle(clazz, fieldName, fieldType)
 				.withInvokeExactBehavior();
 		} catch (NoSuchFieldException | IllegalAccessException ignored) {
 			return null;
