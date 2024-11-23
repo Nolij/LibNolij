@@ -33,4 +33,12 @@ public final class UnsafeUtil {
         }
     }
     
+    public static void exit(int exitCode) {
+        try {
+            System.exit(exitCode);
+        } catch (Throwable ignored) {
+            Runtime.getRuntime().halt(exitCode);
+        }
+    }
+    
 }

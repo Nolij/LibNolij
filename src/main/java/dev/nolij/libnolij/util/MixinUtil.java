@@ -67,12 +67,7 @@ public final class MixinUtil {
 			exitCode = 1;
 		}
 		
-		try {
-			System.exit(exitCode);
-		} catch (Throwable t) {
-			// Thanks FML
-			Runtime.getRuntime().halt(exitCode);
-		}
+		UnsafeUtil.exit(exitCode);
 	}
 	
 }
